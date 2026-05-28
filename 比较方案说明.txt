@@ -1,0 +1,28 @@
+一：
+按 function/procedure 为单位，先做"语义归一化"再比较：
+1. 拆分：将 package body 按函数/过程拆成独立单元（以 function/procedure 开头，到对应 end 结束）
+2. 按名称匹配：用函数/过程名匹配新旧代码
+3. 语义归一化预处理（消除等价语法差异）：
+   - 去掉所有空白/换行，将代码压成单行 token 序列
+   - 去掉 DECLARE 关键字（PG 特有，Oracle 不需要）
+   - 去掉 END 后的函数名（end f_period; → end;）
+   - 关键字统一大写（已做 toUpper）
+   - number → numeric 统一
+   - default → := 统一
+   - nvl → coalesce 统一
+   - sysdate → current_date 统一
+   - rownum → row_number 统一
+   - 行末的 as → is 统一
+4. Word 级 diff：对归一化后的 token 序列做 word 级 diff
+5. 统计：只统计真正的语义变更词数
+
+二：
+按 function/procedure 为单位，只做"空白归一化"再比较：
+1. 拆分：将 package body 按函数/过程拆成独立单元（以 function/procedure 开头，到对应 end 结束）
+2. 按名称匹配：用函数/过程名匹配新旧代码
+3. 空白归一化预处理：
+   - 去掉所有空白/换行，将代码压成单行 token 序列
+   - 去掉注释
+   - 关键字统一大写
+4. Word 级 diff：对归一化后的 token 序列做 word 级 diff
+5. 统计：所有词级变更都纳入统计（含语法等价替换差异）
