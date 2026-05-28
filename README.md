@@ -53,7 +53,20 @@ output/
 
 ## Comparison Schemes
 
-Semantic normalization currently treats these common conversions as equivalent:
+Both schemes compare code at the `FUNCTION`/`PROCEDURE` level:
+
+1. Extract `PACKAGE BODY` content from each matched file.
+2. Split package bodies into independent functions and procedures.
+3. Match old and new units by function/procedure name.
+4. Normalize each matched unit.
+5. Run word-level diff on the normalized token sequences.
+6. Aggregate changed word counts and changed function/procedure counts.
+
+### Semantic Normalization
+
+Semantic normalization removes or rewrites common equivalent Oracle to PostgreSQL/OceanBase syntax differences before comparing tokens. It is intended to highlight business logic changes instead of migration syntax noise.
+
+It currently treats these common conversions as equivalent:
 
 - `NUMBER` to `NUMERIC`
 - `DEFAULT` to `:=`
@@ -63,7 +76,11 @@ Semantic normalization currently treats these common conversions as equivalent:
 - trailing `AS` to `IS`
 - removes `DECLARE`, function names after `END`, and selected Oracle-only hints such as `DETERMINISTIC`
 
-Whitespace normalization removes comments and blank lines, uppercases tokens, and keeps syntax differences.
+It also removes comments and blank lines, uppercases tokens, and tokenizes the normalized code before running word-level diff.
+
+### Whitespace Normalization
+
+Whitespace normalization only removes comments and whitespace, uppercases tokens, and keeps syntax differences. It counts all word-level changes, including equivalent syntax conversions such as `NVL` to `COALESCE`.
 
 ## Limitations
 
